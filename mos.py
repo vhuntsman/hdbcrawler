@@ -163,7 +163,6 @@ def gen_dict_blocks(str_roomtype_url):
 	#get the url from the code fragment
 	obj_url_link = re.search('\(flattype=="'+flattype+'"\).*?\+.*?\'(.*?)\';',fragment, re.DOTALL)
 	if obj_url_link:
-		logging.info('Timothy: Yay!')
 		roomtype_url = obj_url_link.groups()[0]
 	else:
 		#check for SBF style of coding
@@ -174,10 +173,17 @@ def gen_dict_blocks(str_roomtype_url):
 		else:
 			obj_url_link = re.search('else.*?\+.*?\'(.*?)\';',fragment, re.DOTALL)
 		
-		#replace for BTO
-		roomtype_url = obj_url_link.groups()[0].replace('\'+flattype+\'',flattype)
-		
-		#replace for SBF
-		roomtype_url = obj_url_link.groups()[0].replace('\'+myflattype+\'',flattype)
 
-	return server_url+roomtype_url
+	#replace for SBF
+	roomtype_url = obj_url_link.groups()[0].replace('\'+myflattype+\'',flattype)
+	#replace for BTO
+	roomtype_url = roomtype_url.replace('\'+flattype+\'',flattype)
+
+	session_url = server_url+roomtype_url
+	return session_url
+	#generate the session cookie from the session_url
+	req = urllib2.Request(session_url,None,headers)
+	response = urllib2.urlopen(req)
+	str_cookies = response.info().getheader('Set-Cookie')
+	session_cookie= re.search('(JSESSIONIDv7=.*?;)',str_cookies).groups()[0]
+	return session_cookie
