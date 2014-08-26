@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+<title>{{ title }}</title>
+  <body>
+  <table border="1" col="" width="25%">
+  <tr><td>Unit</td><td>Price</td><td>Floor Area</td></tr>
+	{% for unit in list_unit_data %}
+		<tr>{% for detail in unit %}
+			<td>{{detail}}</td>
+		{% endfor %}</tr>
+	{% endfor %}
+  </table>
+  <p>Units Available: {{units_total - units_sold}} Units Sold: {{ units_sold }} Total Units: {{units_total}}</p>
+  </body>
+</html>
+{% endautoescape %}
