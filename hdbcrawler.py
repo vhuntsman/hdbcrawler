@@ -50,12 +50,12 @@ class MOSPage(webapp2.RequestHandler):
 			#here we generate the dictionary again. TO DO: make this dictionary global, possible?
 			#dict_mos_links=mos.get_dict_mos_links()
 			str_mos_key = self.request.get('MOS_Sel')
-			logging.info(str_mos_key)
+			#logging.info(str_mos_key)
 			self.response.write('You have selected '+str_mos_key+'<br>')
 			#self.response.write('The link is'+ self.request.get('MOS_link'))
 			global str_session_url
 			global dict_mos_links
-			logging.info(dict_mos_links[str_mos_key])
+			#logging.info(dict_mos_links[str_mos_key])
 			dict_launches = mos.gen_dict_roomtype(dict_mos_links[str_mos_key],str_session_url)
 			if dict_launches:
 				for launchdates in dict_launches:

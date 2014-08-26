@@ -243,7 +243,7 @@ def list_analyse_block(reference_url,reference_cookie,list_dict_post_data,user_i
 	#logging.info(contents)
 	#<td class="textContentNew" colspan="2" nowrap>Malay-10,&nbsp;Chinese-10,&nbsp;Indian/Other Races-4&nbsp;</td>
 	str_ethnic_quota = re.search('<td class="textContentNew" colspan="2" nowrap>(Malay.*&nbsp;)</td>',contents,re.DOTALL).groups()[0].strip('&nbsp;')
-	logging.info(str_ethnic_quota)
+	#logging.info(str_ethnic_quota)
 	for m in re.finditer('.*font class(.*)</div>', contents):
 			substring = m.groups()[0]
 			CSVSublist = []
