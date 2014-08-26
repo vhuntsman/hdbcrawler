@@ -2,15 +2,21 @@ import urllib2
 import urllib
 import re
 import logging
+import cgi
+
+#comment out for production
 #from google.appengine.api import urlfetch
-#comment out when using winpdb
+#urlfetch.set_default_fetch_deadline(60)
+#end
+
 #import pdb
 #pdb.set_trace()
 def get_dict_mos_links():
 
+	headers = {'User-agent' :'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36'}
 	url = "http://www.hdb.gov.sg/fi10/fi10321p.nsf/w/BuyingNewFlatShortlistedApplicants?OpenDocument"
-	req = urllib2.Request(url)
-	response = urllib2.urlopen(req, timeout = 30)
+	req = urllib2.Request(url,None,headers)
+	response = urllib2.urlopen(req)
 	the_page = response.read()
 	#print the_page
 
@@ -129,7 +135,7 @@ def gen_dict_roomtype(user_select_url,session_url):
 							#print dict_launches[dictkey_launchdate][dictkey_estate][dictkey_project][dictkey_roomtype]
 	return dict_launches
 
-def gen_dict_blocks(str_roomtype_url):
+def gen_list_dict_blocks(str_roomtype_url):
 	headers = {'User-agent' :'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36'}
 	req = urllib2.Request(str_roomtype_url,None,headers)
 	response = urllib2.urlopen(req)
@@ -180,10 +186,78 @@ def gen_dict_blocks(str_roomtype_url):
 	roomtype_url = roomtype_url.replace('\'+flattype+\'',flattype)
 
 	session_url = server_url+roomtype_url
-	return session_url
+	#return session_url
 	#generate the session cookie from the session_url
-	req = urllib2.Request(session_url,None,headers)
+	req = urllib2.Request(session_url.replace(' ','%20'),None,headers)
 	response = urllib2.urlopen(req)
 	str_cookies = response.info().getheader('Set-Cookie')
 	session_cookie= re.search('(JSESSIONIDv7=.*?;)',str_cookies).groups()[0]
-	return session_cookie
+	session_url_content = response.read()
+	
+	#generate the url for block request
+	#<IFRAME id=search height=340 marginHeight=0 src="/webapp/BP13INTV/BP13EBSBULIST4?Town=Sembawang&Flat_Type=BTO&DesType=A&ethnic=Y&Flat=4-ROOM&ViewOption=A&dteBallot=201403&callPage=&projName=A&BonusFlats=" frameBorder=0 width=420 allowTransparency name=search marginWidth=0></IFRAME>
+	str_block_url=re.search('<IFRAME.*src="(.*)".*</IFRAME>',session_url_content,re.DOTALL).groups()[0]
+	block_url = str_block_url.replace(' ','%20')
+	req = urllib2.Request(server_url+block_url,None,headers)
+	req.add_header('Cookie',session_cookie)
+	response = urllib2.urlopen(req)
+	contents = response.read()
+
+	#return cgi.escape(contents)
+	#str_cookies = response.info().getheader('Set-Cookie')
+	#session_cookie= re.search('(JSESSIONIDv7=.*?;)',str_cookies).groups()[0]
+	blocks = re.finditer('javascript:checkBlk\((.*?)\)',contents,re.DOTALL)
+	list_blocks=[]
+	for idx,block in enumerate(blocks):
+		list_blocks.append(block.groups()[0].split(','))
+	#href="javascript:checkBlk('445A','N4','C13')"
+	#temp_str = re.search('(href="javascript:checkBlk.*")?',contents,re.DOTALL).groups()[0]
+	raw_post_data = re.search('(<input type="hidden" name="Block".*</FORM>)',contents,re.DOTALL).groups()[0]
+	#<input type="hidden" name="Block" value="">
+	post_data = re.findall('<input type="hidden".*?name="(.*)".*?value="(.*)">',raw_post_data)
+	dict_post_data = dict()
+	for param in post_data:
+		dict_post_data[param[0]]=param[1]
+	list_dict_post_data = []
+	for idx,block in enumerate(list_blocks):
+		list_dict_post_data.append(dict_post_data.copy())
+		list_dict_post_data[idx]['Block']=block[0].strip('\'')
+		list_dict_post_data[idx]['Neighbourhood']=block[1].strip('\'')
+		list_dict_post_data[idx]['Contract']=block[2].strip('\'')
+
+	return (server_url+block_url).split('?')[0],list_dict_post_data,session_cookie
+
+def list_analyse_block(reference_url,reference_cookie,list_dict_post_data,user_index):
+	headers = {'User-agent' :'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36'}
+	post_data = urllib.urlencode(list_dict_post_data[user_index])
+	post_manual = 'Block=445A&Flat_Type=BTO&Town=Bukit+Batok&Flat=5-ROOM&DesType=A&EthnicA=Y&EthnicM=&EthnicC=&EthnicO=&numSPR=&ViewOption=A&dteBallot=201405&Neighbourhood=N4&Contract=C13&projName=A+++%3BA+++&firstLoadMap=Yes&callPage=esales.hdb.gov.sg&BonusFlats=N'
+	req = urllib2.Request(reference_url, post_data, headers)
+	req.add_header('Cookie',reference_cookie)
+	response = urllib2.urlopen(req)
+	contents = response.read()
+	#return contents
+	CSVlist = []
+	SoldUnits = 0
+	TotalUnits = 0
+	#include the sold units as well
+	#logging.info(contents)
+	#<td class="textContentNew" colspan="2" nowrap>Malay-10,&nbsp;Chinese-10,&nbsp;Indian/Other Races-4&nbsp;</td>
+	str_ethnic_quota = re.search('<td class="textContentNew" colspan="2" nowrap>(Malay.*&nbsp;)</td>',contents,re.DOTALL).groups()[0].strip('&nbsp;')
+	logging.info(str_ethnic_quota)
+	for m in re.finditer('.*font class(.*)</div>', contents):
+			substring = m.groups()[0]
+			CSVSublist = []
+			TotalUnits +=1
+			#find the unit
+			CSVSublist.append(re.match('.*>(.*)</font>.*',substring).groups()[0].strip())
+			#find the price and floor area (for a bluetext)
+			try:
+					CSVSublist.append(re.search('.*nbsp;(.*)</td></tr><tr bgcolor.*',substring).groups()[0])
+					CSVSublist.append(re.search('left;\'>(.*)&nbsp;Sqm</td><',substring).groups()[0])
+			except:
+			#append sold and N.A. for a redtext
+					SoldUnits +=1
+					CSVSublist.append('Sold')
+					CSVSublist.append('N.A.')
+			CSVlist.append(CSVSublist)
+	return CSVlist,SoldUnits,TotalUnits,str_ethnic_quota
