@@ -57,8 +57,11 @@ class MOSPage(webapp2.RequestHandler):
 			global dict_mos_links
 			#logging.info(dict_mos_links[str_mos_key])
 			dict_launches = mos.gen_dict_roomtype(dict_mos_links[str_mos_key],str_session_url)
+			sorted_launchdates = dict_launches.keys()
+			sorted_launchdates.sort()
+			sorted_launchdates = list(reversed(sorted_launchdates))
 			if dict_launches:
-				for launchdates in dict_launches:
+				for launchdates in sorted_launchdates:
 					self.response.write('<h2>'+launchdates+'</h2>')
 					for estates in dict_launches[launchdates]:
 						self.response.write('<h3>'+estates+'</h3>')
@@ -72,6 +75,7 @@ class MOSPage(webapp2.RequestHandler):
 								#this is for the Sale of balance case, where there are actually no "project" names,
 								#hence [project] key actually refers to the [roomtype]
 								self.response.write('<a href="/roomtypepage?roomtype_link='+dict_launches[launchdates][estates][project].replace("&","%26")+'">'+project+'</a> | ')
+					self.response.write('<br><br>')
 			self.response.write('<br><footer>Created by Timothy Teh | Engineer | Inventor | Experimentalist | &#169; 2014 All Rights Reserved. </footer>')
 #prototype landing page after selecting the estate and project
 class RoomTypePage(webapp2.RequestHandler):
@@ -126,7 +130,8 @@ class ReportPage(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([('/', MainPage),('/MOS', MOSPage),('/roomtypepage', RoomTypePage),('/report', ReportPage),],debug=True)
 
 #TODO:
-#1) Sort the launch dates
-#2) Use templating for ReportPage
-#3) try not to send entire link in MOSPage
-#4) inlcude map, ethic quota
+#1) try not to send entire link in MOSPage
+#2) inlcude map
+#3) Add year based on server date?
+#4) Responsive design
+#5) Use templating for mainpage, MOS page and roomtype page
