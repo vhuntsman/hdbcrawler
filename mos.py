@@ -253,7 +253,10 @@ def list_analyse_block(reference_url,reference_cookie,list_dict_post_data,user_i
 			#find the price and floor area (for a bluetext)
 			try:
 					CSVSublist.append(re.search('.*nbsp;(.*)</td></tr><tr bgcolor.*',substring).groups()[0])
-					CSVSublist.append(re.search('left;\'>(.*)&nbsp;Sqm</td><',substring).groups()[0])
+					try:
+						CSVSublist.append(re.search('left;\'>(.*)&nbsp;Sqm</td><',substring).groups()[0])
+					except:
+						CSVSublist.append(re.search('left;\'>(.*)&nbsp;Sqm(\(3Gen\))</td><',substring).groups()[0]+' '+re.search('left;\'>(.*)&nbsp;Sqm(\(3Gen\))</td><',substring).groups()[1])
 			except:
 			#append sold and N.A. for a redtext
 					SoldUnits +=1
