@@ -5,11 +5,17 @@ api_version: 1
 threadsafe: true
 
 handlers:
-- url: /images
-  static_dir: images
+- url: /img
+  static_dir: img
   
-- url: /scripts
-  static_dir: scripts
+- url: /fonts
+  static_dir: fonts
+
+- url: /css
+  static_dir: css
+
+- url: /js
+  static_dir: js 
 
 - url: /.*
   script: hdbcrawler.app
