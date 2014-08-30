@@ -30,18 +30,18 @@ reference_url=''
 class MainPage(webapp2.RequestHandler):
 
     def get(self):
-			self.response.write('<title>A GAE Experiment</title>')
-			self.response.write('Select from the following modes of sale for analysis<br>')
+			#self.response.write('<title>A GAE Experiment</title>')
+			#self.response.write('Select from the following modes of sale for analysis<br>')
 			global str_session_url
 			global dict_mos_links
 			dict_mos_links,str_session_url=mos.get_dict_mos_links()
-			for mos_name in dict_mos_links:
-				self.response.write('<a href="/MOS?MOS_Sel='+mos_name+'">'+mos_name+'</a><br>')
-				#self.response.write('<a href="'+dict_mos_links[mos_name]+'">'+mos_name+'</a><br>')
-			#self.response.headers['Content-Type'] = 'text/plain'
-			#self.response.out.write(template.render('index.html',{}))
-			self.response.write('<br><footer>Created by Timothy Teh | Engineer | Inventor | Experimentalist | &#169; 2014 All Rights Reserved. </footer>')
-			self.response.write('<br><footer>This webapp is dedicated to my wife, Evelyn</footer>')
+
+			template_values = {
+				'dict_mos_links': dict_mos_links ,
+			}
+		
+			template = JINJA_ENVIRONMENT.get_template('index.html')
+			self.response.write(template.render(template_values))
 
 #prototype landing page after selecting mode of sale (MOS): BTO or SBF
 class MOSPage(webapp2.RequestHandler):
