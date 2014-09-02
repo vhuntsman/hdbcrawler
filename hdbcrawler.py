@@ -78,29 +78,22 @@ class MOSPage(webapp2.RequestHandler):
         
             template = JINJA_ENVIRONMENT.get_template('MOS.html')
             self.response.write(template.render(template_values))
+
 #prototype landing page after selecting the estate and project
 class RoomTypePage(webapp2.RequestHandler):
 
     def get(self):
-            #self.response.headers['Content-Type'] = 'text/plain'
-            #self.response.write('Hello, RoomType Page!<br>')
-            
-            #prototype
-            # str_roomtype_url = self.request.get('roomtype_link')
-            # self.response.write(str_roomtype_url+'<br>')
-            # obj_flattype = re.search('&ft=(.*)&',str_roomtype_url)
-            # self.response.write('ft is '+obj_flattype.groups()[0]+'<br>')
-            # self.response.write('twn is '+ re.search('twn=(.*)',str_roomtype_url).groups()[0]+'<br>')
-            #end of prototype
-
             global list_dict_post_data
             global reference_cookie
             global reference_url
             reference_url,list_dict_post_data,reference_cookie = mos.gen_list_dict_blocks(self.request.get('roomtype_link'))
-            self.response.write('Click on the blocks to analyse<br>')
-            for idx,dict_post_data in enumerate(list_dict_post_data):
-                self.response.write('<a href="/report?list_idx='+str(idx)+'">'+dict_post_data['Block']+'</a><br>')
-            self.response.write('<br><footer>Created by Timothy Teh | Engineer | Inventor | Experimentalist | &#169; 2014 All Rights Reserved. </footer>')
+
+            template_values = {
+                'list_dict_post_data':list_dict_post_data,
+            }
+        
+            template = JINJA_ENVIRONMENT.get_template('roomtype.html')
+            self.response.write(template.render(template_values))
 
 #prototype landing page for report generation
 class ReportPage(webapp2.RequestHandler):
@@ -108,13 +101,13 @@ class ReportPage(webapp2.RequestHandler):
     def get(self):
             # self.response.write('Hello, Report Page!<br>')
             user_index = int(self.request.get('list_idx'))
+            global list_dict_post_data
             global reference_cookie
             global reference_url
             #self.response.write(reference_cookie)
             
             list_unit_values,sold_cnt,total_cnt,ethnic_quota = mos.list_analyse_block(reference_url,reference_cookie,list_dict_post_data,user_index)
-            self.response.write('Block '+list_dict_post_data[user_index]['Block']+', '+list_dict_post_data[user_index]['Flat']+', '+list_dict_post_data[user_index]['Town']+'<br>')
-            self.response.write('Ethnic Quota: '+ethnic_quota)
+
             # for block_value in list_block_values:
                 # self.response.write(cgi.escape(str(block_value))+'<br>')
             # self.response.write('Units Sold: '+str(sold_cnt)+ ' Total Units '+str(total_cnt))
@@ -123,6 +116,10 @@ class ReportPage(webapp2.RequestHandler):
                 'list_unit_data': list_unit_values,
                 'units_sold': sold_cnt,
                 'units_total':total_cnt,
+                'list_dict_post_data':list_dict_post_data,
+                'ethnic_quota':ethnic_quota.replace("&nbsp;", " "),
+                'user_index':user_index,
+                
             }
         
             template = JINJA_ENVIRONMENT.get_template('report.html')
