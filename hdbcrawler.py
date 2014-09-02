@@ -26,6 +26,8 @@ dict_mos_links=dict()
 list_dict_post_data=dict()
 reference_cookie=''
 reference_url=''
+str_mos_key=''
+dict_launches=dict()
 #Request handlers - currently not using templating yet
 class MainPage(webapp2.RequestHandler):
 
@@ -35,9 +37,8 @@ class MainPage(webapp2.RequestHandler):
             global str_session_url
             global dict_mos_links
             dict_mos_links,str_session_url=mos.get_dict_mos_links()
-
             template_values = {
-                'dict_mos_links': dict_mos_links ,
+                'dict_mos_links': dict_mos_links,
             }
         
             template = JINJA_ENVIRONMENT.get_template('index.html')
@@ -49,12 +50,15 @@ class MOSPage(webapp2.RequestHandler):
     def get(self):
             #here we generate the dictionary again. TO DO: make this dictionary global, possible?
             #dict_mos_links=mos.get_dict_mos_links()
-            str_mos_key = self.request.get('MOS_Sel')
+
             #logging.info(str_mos_key)
             #self.response.write('You have selected '+str_mos_key+'<br>')
             #self.response.write('The link is'+ self.request.get('MOS_link'))
             global str_session_url
             global dict_mos_links
+            global str_mos_key
+            global dict_launches
+            str_mos_key = self.request.get('MOS_Sel')
             #logging.info(dict_mos_links[str_mos_key])
             dict_launches = mos.gen_dict_roomtype(dict_mos_links[str_mos_key],str_session_url)
             sorted_launchdates = dict_launches.keys()
@@ -86,7 +90,15 @@ class RoomTypePage(webapp2.RequestHandler):
             global list_dict_post_data
             global reference_cookie
             global reference_url
-            reference_url,list_dict_post_data,reference_cookie = mos.gen_list_dict_blocks(self.request.get('roomtype_link'))
+            global str_mos_key
+            global dict_launches
+            
+            if str_mos_key == 'Build-To-Order':
+                roomtype_link = dict_launches[self.request.get('launchdate')][self.request.get('estate')][self.request.get('project')][self.request.get('roomtype')]
+            else:
+                roomtype_link = dict_launches[self.request.get('launchdate')][self.request.get('estate')][self.request.get('project')]
+            
+            reference_url,list_dict_post_data,reference_cookie = mos.gen_list_dict_blocks(roomtype_link)
 
             template_values = {
                 'list_dict_post_data':list_dict_post_data,
@@ -128,8 +140,10 @@ class ReportPage(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([('/', MainPage),('/MOS', MOSPage),('/roomtypepage', RoomTypePage),('/report', ReportPage),],debug=True)
 
 #TODO:
-#1) try not to send entire link in MOSPage
+    #1) try not to send entire link in MOSPage - done
 #2) inlcude map
 #3) Add year based on server date?
-#4) Responsive design
-#5) Use templating for mainpage, MOS page and roomtype page
+    #4) Responsive design - done
+    #5) Use templating for mainpage, MOS page and roomtype page - done
+#6) Add help '?' popover
+#7) Expand block with result without leaving page (i.e., somehow fetch url without leaving page)
