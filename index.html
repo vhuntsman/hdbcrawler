@@ -17,7 +17,7 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
       <style>
-            .footer {
+        .footer {
           position: absolute;
           bottom: 0;
           /* Set the fixed height of the footer here */
@@ -28,16 +28,15 @@
   <body role="document">
 
     <div class="container">
-        <h3>Please select a mode of sale</h3>   
-        <table class="table table-hover">
-            {% for mos_name in dict_mos_links %}
-            <tr><td><a href="/MOS?MOS_Sel={{mos_name}}" class="btn btn-lg btn-link">{{mos_name}}</a></td></tr>
-            {% endfor %}
-        </table>
-
-    <div class="footer">
-        <p>Created by Timothy Teh &middot; Engineer &middot; Inventor &middot; Experimentalist &middot; 2014 &copy; </p>
-    </div>
+        <h3>Please select a mode of sale</h3> 
+        <div class="list-group">
+         {% for mos_name in dict_mos_links %}
+          <a href="/MOS?MOS_Sel={{mos_name}}" class="list-group-item">{{mos_name}}</a>
+         {% endfor %}
+        </div>
+        <div class="footer">
+            <p>Created by Timothy Teh &middot; Engineer &middot; Inventor &middot; Experimentalist &middot; 2014 &copy; </p>
+        </div>
     </div>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
