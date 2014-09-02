@@ -28,7 +28,7 @@
   <body role="document">
     <div class="container">
         <div class="panel panel-default">
-            <div class="panel-heading">Report</div>
+            <div class="panel-heading"></div>
             <div class="panel-body">
             <h4>Block {{list_dict_post_data[user_index]['Block']}} , {{list_dict_post_data[user_index]['Flat']}}, {{list_dict_post_data[user_index]['Town']}}<br>
                 <small> Ethnic Quota: {{ethnic_quota}}</small>
@@ -44,13 +44,16 @@
                     </tr>
                 {% endfor %}
             </table>
-            <div class="panel-heading">Units Available: {{units_total - units_sold}} Units Sold: {{ units_sold }} Total Units: {{units_total}}</div>
+            <div class="panel-heading">
+                Units Available <span class="badge">{{units_total - units_sold}}</span>&nbsp&nbsp
+                Units Sold <span class="badge">{{ units_sold }}</span>&nbsp&nbsp
+                Total Units <span class="badge">{{units_total}}</span>&nbsp&nbsp
+            </div>
         </div>
         <footer>
             <p>Created by Timothy Teh &middot; Engineer &middot; Inventor &middot; Experimentalist &middot; 2014 &copy; </p>
         </footer>
     </div>
-
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
