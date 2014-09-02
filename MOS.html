@@ -32,7 +32,7 @@
                                 <li class="list-group-item"><p>{{project}}</p>
                                     <div class="btn-group">
                                         {% for roomtype in dict_launches[launchdate][estate][project] %}
-                                            <a href="/roomtypepage?roomtype_link={{dict_launches[launchdate][estate][project][roomtype].replace("&","%26")}}" class="btn btn-default">{{roomtype}}</a>
+                                            <a href="/roomtypepage?launchdate={{launchdate}}&estate={{estate}}&project={{project}}&roomtype={{roomtype}}" class="btn btn-default">{{roomtype}}</a>
                                         {% endfor %}
                                     </div>
                                 </li>
@@ -41,7 +41,7 @@
                             <li class="list-group-item">
                                 <div class="btn-group">
                                     {% for project in dict_launches[launchdate][estate] %}
-                                        <a href="/roomtypepage?roomtype_link={{dict_launches[launchdate][estate][project].replace("&","%26")}}" class="btn btn-default">{{project}}</a>
+                                        <a href="/roomtypepage?launchdate={{launchdate}}&estate={{estate}}&project={{project}}" class="btn btn-default">{{project}}</a>
                                     {% endfor %}
                                 </div>
                             </li>
