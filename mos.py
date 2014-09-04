@@ -4,6 +4,7 @@ import re
 import logging
 import cgi
 
+int_mos_test_var = 0
 #comment out for production
 #from google.appengine.api import urlfetch
 #urlfetch.set_default_fetch_deadline(60)
