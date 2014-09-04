@@ -32,6 +32,8 @@ dict_launches=dict()
 class MainPage(webapp2.RequestHandler):
 
     def get(self):
+      			mos.int_mos_test_var += 1
+        		self.response.write(mos.int_mos_test_var)
             #self.response.write('<title>A GAE Experiment</title>')
             #self.response.write('Select from the following modes of sale for analysis<br>')
             global str_session_url
