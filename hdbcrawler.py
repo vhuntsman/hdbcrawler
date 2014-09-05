@@ -139,8 +139,16 @@ class ReportPage(webapp2.RequestHandler):
             template = JINJA_ENVIRONMENT.get_template('report.html')
             self.response.write(template.render(template_values))
 
-app = webapp2.WSGIApplication([('/', MainPage),('/MOS', MOSPage),('/roomtypepage', RoomTypePage),('/report', ReportPage),],debug=True)
+class MaintPage(webapp2.RequestHandler):
+    
+    def get (self):
+        template_values = {
+        }
+        template = JINJA_ENVIRONMENT.get_template('maint.html')
+        self.response.write(template.render(template_values))
 
+#app = webapp2.WSGIApplication([('/', MainPage),('/MOS', MOSPage),('/roomtypepage', RoomTypePage),('/report', ReportPage),],debug=True)
+app = webapp2.WSGIApplication([('/.*', MaintPage),],debug=True)
 #TODO:
     #1) try not to send entire link in MOSPage - done
 #2) inlcude map
