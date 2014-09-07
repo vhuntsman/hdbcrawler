@@ -178,7 +178,7 @@ def gen_list_dict_blocks(str_roomtype_url):
 		if obj_url_link:
 			roomtype_url = obj_url_link.groups()[0]
 		else:
-			obj_url_link = re.search('else.*?\+.*?\'(.*?)\';',fragment, re.DOTALL)
+			obj_url_link = re.search('else document.getElementById.*?\+.*?\'(.*?)\';',fragment, re.DOTALL)
 		
 
 	#replace for SBF
@@ -232,6 +232,7 @@ def list_analyse_block(reference_url,reference_cookie,dict_post_data):
 	headers = {'User-agent' :'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36'}
 	post_data = urllib.urlencode(dict_post_data)
 	post_manual = 'Block=445A&Flat_Type=BTO&Town=Bukit+Batok&Flat=5-ROOM&DesType=A&EthnicA=Y&EthnicM=&EthnicC=&EthnicO=&numSPR=&ViewOption=A&dteBallot=201405&Neighbourhood=N4&Contract=C13&projName=A+++%3BA+++&firstLoadMap=Yes&callPage=esales.hdb.gov.sg&BonusFlats=N'
+
 	req = urllib2.Request(reference_url, post_data, headers)
 	req.add_header('Cookie',reference_cookie)
 	response = urllib2.urlopen(req)
