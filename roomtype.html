@@ -31,7 +31,11 @@
         <h4>Select a block for analysis</h4> 
         <div class="btn-group">
         {% for dict_post_data in list_dict_post_data %}
-            <a href="/report?list_idx={{loop.index-1}}" class="btn btn-default">{{dict_post_data['Block']}}</a>
+            <!-- <a href="/report?list_idx={{loop.index-1}}" class="btn btn-default">{{dict_post_data['Block']}}</a> -->
+            <form class="btn-group" action="/report" method="post">
+              <input type="hidden" name="pd_dict_post_data" value="{{dict_post_data}}">
+              <input class="btn btn-default" type="submit" value="{{dict_post_data['Block']}}">
+            </form>
         {% endfor %}
         </div>
         <div class="footer">
