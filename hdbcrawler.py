@@ -101,7 +101,7 @@ class RoomTypePage(webapp2.RequestHandler):
             #Save the data for the next page
             self.response.set_cookie('ck_reference_url', reference_url)
             self.response.set_cookie('ck_reference_cookie', reference_cookie)
-            self.response.set_cookie('ck_post_data', str(list_dict_post_data))
+            #self.response.set_cookie('ck_post_data', str(list_dict_post_data))
             
             template_values = {
                 'list_dict_post_data':list_dict_post_data,
