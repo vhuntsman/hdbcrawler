@@ -32,7 +32,10 @@
                                 <li class="list-group-item"><p>{{project}}</p>
                                     <div class="btn-group">
                                         {% for roomtype in dict_launches[launchdate][estate][project] %}
-                                            <a href="/roomtypepage?launchdate={{launchdate}}&estate={{estate}}&project={{project}}&roomtype={{roomtype}}" class="btn btn-default">{{roomtype}}</a>
+                                            <form class="btn-group" action="/roomtypepage" method="post">
+                                              <input type="hidden" name="pd_roomtype_link" value="{{dict_launches[launchdate][estate][project][roomtype]}}">
+                                              <input class="btn btn-default" type="submit" value="{{roomtype}}">
+                                            </form>
                                         {% endfor %}
                                     </div>
                                 </li>
@@ -41,7 +44,10 @@
                             <li class="list-group-item">
                                 <div class="btn-group">
                                     {% for project in dict_launches[launchdate][estate] %}
-                                        <a href="/roomtypepage?launchdate={{launchdate}}&estate={{estate}}&project={{project}}" class="btn btn-default">{{project}}</a>
+                                            <form class="btn-group" action="/roomtypepage" method="post">
+                                              <input type="hidden" name="pd_roomtype_link" value="{{dict_launches[launchdate][estate][project]}}">
+                                              <input class="btn btn-default" type="submit" value="{{project}}">
+                                            </form>
                                     {% endfor %}
                                 </div>
                             </li>
