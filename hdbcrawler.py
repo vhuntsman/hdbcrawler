@@ -154,8 +154,8 @@ class MaintPage(webapp2.RequestHandler):
         self.response.write(template.render(template_values))
 
 #Comment the line below and uncomment the line after for maintenance
-app = webapp2.WSGIApplication([('/', MainPage),('/MOS', MOSPage),('/roomtypepage', RoomTypePage),('/report', ReportPage),('/.*', Handler404),],debug=True)
-#app = webapp2.WSGIApplication([('/.*', MaintPage),],debug=True)
+#app = webapp2.WSGIApplication([('/', MainPage),('/MOS', MOSPage),('/roomtypepage', RoomTypePage),('/report', ReportPage),('/.*', Handler404),],debug=True)
+app = webapp2.WSGIApplication([('/.*', MaintPage),],debug=True)
 #TODO:
     #1) try not to send entire link in MOSPage - done
 #2) inlcude map
