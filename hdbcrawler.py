@@ -38,6 +38,7 @@ class MainPage(webapp2.RequestHandler):
             template = JINJA_ENVIRONMENT.get_template('index.html')
             self.response.write(template.render(template_values))
 
+
 #prototype landing page after selecting mode of sale (MOS): BTO or SBF
 class MOSPage(webapp2.RequestHandler):
 
@@ -96,6 +97,7 @@ class RoomTypePage(webapp2.RequestHandler):
             
     def post(self):
             roomtype_link = self.request.get('pd_roomtype_link')
+            #logging.info(roomtype_link)
             reference_url,list_dict_post_data,reference_cookie = mos.gen_list_dict_blocks(roomtype_link)
             
             #Save the data for the next page
@@ -154,8 +156,8 @@ class MaintPage(webapp2.RequestHandler):
         self.response.write(template.render(template_values))
 
 #Comment the line below and uncomment the line after for maintenance
-#app = webapp2.WSGIApplication([('/', MainPage),('/MOS', MOSPage),('/roomtypepage', RoomTypePage),('/report', ReportPage),('/.*', Handler404),],debug=True)
-app = webapp2.WSGIApplication([('/.*', MaintPage),],debug=True)
+app = webapp2.WSGIApplication([('/', MainPage),('/MOS', MOSPage),('/roomtypepage', RoomTypePage),('/report', ReportPage),('/.*', Handler404),],debug=True)
+#app = webapp2.WSGIApplication([('/.*', MaintPage),],debug=True)
 #TODO:
     #1) try not to send entire link in MOSPage - done
 #2) inlcude map
