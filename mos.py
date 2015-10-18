@@ -7,35 +7,38 @@ import HTMLParser
 
 
 #comment out for production
-#from google.appengine.api import urlfetch
-#urlfetch.set_default_fetch_deadline(60)
+from google.appengine.api import urlfetch
+urlfetch.set_default_fetch_deadline(60)
 #end
 
 #import pdb
 #pdb.set_trace()
 def get_dict_mos_links():
 
-    headers = {'User-agent' :'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36'}
-    url = "http://www.hdb.gov.sg/fi10/fi10321p.nsf/w/BuyingNewFlatShortlistedApplicants?OpenDocument"
-    req = urllib2.Request(url,None,headers)
-    response = urllib2.urlopen(req)
-    the_page = response.read()
-    #print the_page
+    # headers = {'User-agent' :'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36'}
+    # url = "http://www.hdb.gov.sg/fi10/fi10321p.nsf/w/BuyingNewFlatShortlistedApplicants?OpenDocument"
+    # req = urllib2.Request(url,None,headers)
+    # response = urllib2.urlopen(req)
+    # the_page = response.read()
+    # #print the_page
 
-    #get the line containing links
-    for line in the_page.splitlines():
-        if "Mode of Sale" in line:
-            linkstr = line
-    #The following code gets the str_session_url, which is the first URL from which the JSESSIONIDv7 cookie is initialized
-    #<iframe name="FRAME1" height="2200" width="100%" frameborder=0 scrolling=auto src="http://services2.hdb.gov.sg/webapp/BP13INTV/BP13SFlatAvailability?sel=BTO"></iframe>
-    str_session_url = re.search('<iframe name.*src="(.*)"></iframe>',the_page).groups()[0]
+    # #get the line containing links
+    # for line in the_page.splitlines():
+        # if "Mode of Sale" in line:
+            # linkstr = line
+    # #The following code gets the str_session_url, which is the first URL from which the JSESSIONIDv7 cookie is initialized
+    # #<iframe name="FRAME1" height="2200" width="100%" frameborder=0 scrolling=auto src="http://services2.hdb.gov.sg/webapp/BP13INTV/BP13SFlatAvailability?sel=BTO"></iframe>
+    # str_session_url = re.search('<iframe name.*src="(.*)"></iframe>',the_page).groups()[0]
 
-    #print linkstr
-    mlist = re.finditer('javascript:loadURL\(\'(.*?)\'\)">(.*?)</a>', linkstr)
-    #generate a dictionary of links of mode of sales
+    # #print linkstr
+    # mlist = re.finditer('javascript:loadURL\(\'(.*?)\'\)">(.*?)</a>', linkstr)
+    # #generate a dictionary of links of mode of sales
     dict_mos_links = dict()
-    for m in mlist:
-        dict_mos_links[m.groups()[1]] = m.groups()[0]
+    # for m in mlist:
+        # dict_mos_links[m.groups()[1]] = m.groups()[0]
+    dict_mos_links['Build-To-Order'] = "http://services2.hdb.gov.sg/webapp/BP13AWFlatAvail/BP13SEstateSummary?sel=BTO"
+    dict_mos_links['Sale of Balance Flats'] = "http://services2.hdb.gov.sg/webapp/BP13AWFlatAvail/BP13SEstateSummary?sel=SBF"
+    str_session_url = "http://services2.hdb.gov.sg/webapp/BP13AWFlatAvail/BP13SEstateSummary?sel=BTO"
     return dict_mos_links,str_session_url
 
 def gen_dict_roomtype(user_select_url,session_url):
@@ -55,19 +58,11 @@ def gen_dict_roomtype(user_select_url,session_url):
     req.add_header('Cookie',session_cookie)
     response = urllib2.urlopen(req)
     contents = response.read()
-    
-    #find the server and links to estate/room
-    mlist = re.search('var server=\'(.*?)\';',contents)
-    try:
-        server_url = mlist.groups()[0]
-    except:
-        #print 'No Server found'
-        return None
-    
+        
     #logging.info(server_url)
     server_url = 'http://services2.hdb.gov.sg'
     #split the content by launchdates
-    list_launches = contents.split('svcTableSubHeader')
+    list_launches = contents.split('<h4>')
     
     #remove first item - no use
     list_launches.pop(0)
@@ -78,7 +73,7 @@ def gen_dict_roomtype(user_select_url,session_url):
     #a more general algo, so this is the best option for now
     for launch in list_launches:
         #generate keys for dict_launches
-        resobj_launchdate = re.search('<td colspan="7" align="left">(.*?)&nbsp;</td>',launch)
+        resobj_launchdate = re.search('(.*?)</h4>',launch)
         try:
             
             dictkey_launchdate = resobj_launchdate.groups()[0]
@@ -89,61 +84,54 @@ def gen_dict_roomtype(user_select_url,session_url):
             return None
 
         #split launchdate by estates
-        list_estates = launch.split('svcTableRowOdd')
+        list_estates = launch.split('<h5>')
+        list_estates.pop(0)
+
         for estate in list_estates:
             #generate key for dict_launches:estate
-            obj_estate_names = re.findall('svcTableLabel.*?\>(.*?)&nbsp;',estate)
-            if obj_estate_names:
-                for estate_name in obj_estate_names:
-                    #generate keys for dict_launches:estate
-                    dictkey_estate = estate_name
-                    #initialize dict_launches:estate
-                    dict_launches[dictkey_launchdate][dictkey_estate] = dict()
-                    #split estate by projects - find the project for each estate
-                    list_projects = estate.split('rowspan')
-                    list_projects.pop(0)
-                    for project in list_projects:
-                        #generate key for dict_launches:estate:project
-                        obj_project_names = re.search('>(.*?)&nbsp;</td>',project)
-                        dictkey_project = obj_project_names.groups()[0].strip()
-                        #print dictkey_project
-                        
-                        #initialize dict_launches:estate:project
-                        dict_launches[dictkey_launchdate][dictkey_estate][dictkey_project] = dict()
-                        #generate the key and value for dict_launches:estate:project:roomtype
-                        mlist = re.finditer('openmypage\((.*?)\)\'>?(.*?)</a>&nbsp;</td>',project)
-                        
-                        #generate the dictionary dict_launches:estate:project:roomtype
-                        for m in mlist:
-                            dictval_roomtype = str(h.unescape(m.groups()[0].split(',')[0].strip('"'))) 
-                            dictkey_roomtype = m.groups()[1]
-                            dict_launches[dictkey_launchdate][dictkey_estate][dictkey_project][dictkey_roomtype]=server_url+dictval_roomtype
-                            #logging.info(dict_launches[dictkey_launchdate][dictkey_estate][dictkey_project][dictkey_roomtype])
-                            #print dict_launches[dictkey_launchdate][dictkey_estate][dictkey_project][dictkey_roomtype]
+            obj_estate_names = re.search('(.*?)</h5>',estate)
+            dictkey_estate = obj_estate_names.groups()[0]
+
+            #initialize dict_launches:estate
+            dict_launches[dictkey_launchdate][dictkey_estate] = dict()
+            
+            list_project_names = re.findall('<td colspan="6"><b>(.*?)</b></td>', estate)
+            
+            #for BTO
+            if list_project_names:
+                #split estate by projects - find the project for each estate
+                list_projects = estate.split('<td colspan="6">')
+                list_projects.pop(0)
+                for project in list_projects:
+                    #generate key for dict_launches:estate:project
+                    obj_project_names = re.search('<b>(.*?)</b>',project)
+                    dictkey_project = h.unescape(obj_project_names.groups()[0])
+                    #print dictkey_project
+                    
+                    #initialize dict_launches:estate:project
+                    dict_launches[dictkey_launchdate][dictkey_estate][dictkey_project] = dict()
+                    #generate the key and value for dict_launches:estate:project:roomtype
+                    mlist = re.finditer('openmypage\((.*?)\)\'>?(.*?)</a></td>',project)
+                    
+                    #generate the dictionary dict_launches:estate:project:roomtype
+                    for m in mlist:
+                        dictval_roomtype = str(h.unescape(m.groups()[0].split(',')[0].strip('"'))) 
+                        dictkey_roomtype = m.groups()[1]
+                        dict_launches[dictkey_launchdate][dictkey_estate][dictkey_project][dictkey_roomtype]=server_url+dictval_roomtype
+                    #logging.info(dict_launches[dictkey_launchdate][dictkey_estate][dictkey_project][dictkey_roomtype])
+                    #print dict_launches[dictkey_launchdate][dictkey_estate][dictkey_project][dictkey_roomtype]
             else:
-                obj_estate_names = re.findall('rowspan=.*?>(.*?)&nbsp;</td>',estate)
-                for estate_name in obj_estate_names:
-                    #generate keys for dict_launches:estate
-                    dictkey_estate = estate_name
-                    #initialize dict_launches:estate
-                    dict_launches[dictkey_launchdate][dictkey_estate] = dict()
-                    #split estate by roomtype - find the project for each estate
-                    list_roomtype = estate.split('rowspan')
-                    list_roomtype.pop(0)
-                    for roomtype in list_roomtype:
-                        #generate the key and value for dict_launches:estate:roomtype
-                        mlist = re.finditer('openmypage\((.*?)\)\'>?(.*?)</a></td>',roomtype)
-                        #generate the dictionary dict_launches:estate:roomtype
-                        for m in mlist:
-                            #logging.info(m.groups()[0])
-                            dictval_roomtype = str(h.unescape(m.groups()[0]))
-                            dictval_roomtype = dictval_roomtype.split(',')[0].strip('"')
-                            #logging.info(dictval_roomtype)
-                            dictkey_roomtype = m.groups()[1]
-                            #logging.info(dictkey_roomtype)
-                            dict_launches[dictkey_launchdate][dictkey_estate][dictkey_roomtype]=server_url+dictval_roomtype
-                            #logging.info(dict_launches[dictkey_launchdate][dictkey_estate][dictkey_roomtype])
-                            #print dict_launches[dictkey_launchdate][dictkey_estate][dictkey_project][dictkey_roomtype]
+                mlist = re.finditer('openmypage\((.*?)\)\'>?(.*?)</a></td>',estate)
+                #generate the dictionary dict_launches:estate:roomtype
+                for m in mlist:
+                    #logging.info(m.groups()[0])
+                    dictval_roomtype = str(h.unescape(m.groups()[0]))
+                    dictval_roomtype = dictval_roomtype.split(',')[0].strip('"')
+                    #logging.info(dictval_roomtype)
+                    dictkey_roomtype = m.groups()[1]
+                    #logging.info(dictkey_roomtype)
+                    dict_launches[dictkey_launchdate][dictkey_estate][dictkey_roomtype]=server_url+dictval_roomtype
+
     return dict_launches
 
 def gen_list_dict_blocks(str_roomtype_url):
