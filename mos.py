@@ -136,7 +136,7 @@ def gen_dict_roomtype(user_select_url,session_url):
 
 def gen_list_dict_blocks(str_roomtype_url):
     headers = {'User-agent' :'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36'}
-    server_url = re.search('(.*)/.*\??',str_roomtype_url).groups()[0]
+    server_url = re.search('(.*)/.*?\?',str_roomtype_url).groups()[0]
     req = urllib2.Request(str_roomtype_url.replace(' ','%20'),None,headers)
     #logging.info(str_roomtype_url)
     response = urllib2.urlopen(req)
