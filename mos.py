@@ -26,7 +26,7 @@ def get_dict_mos_links():
     # for line in the_page.splitlines():
         # if "Mode of Sale" in line:
             # linkstr = line
-    # #The following code gets the str_session_url, which is the first URL from which the JSESSIONIDv7 cookie is initialized
+    # #The following code gets the str_session_url, which is the first URL from which the JSESSIONIDP1 cookie is initialized
     # #<iframe name="FRAME1" height="2200" width="100%" frameborder=0 scrolling=auto src="http://services2.hdb.gov.sg/webapp/BP13INTV/BP13SFlatAvailability?sel=BTO"></iframe>
     # str_session_url = re.search('<iframe name.*src="(.*)"></iframe>',the_page).groups()[0]
 
@@ -51,7 +51,7 @@ def gen_dict_roomtype(user_select_url,session_url):
     req = urllib2.Request(session_url,None,headers)
     response = urllib2.urlopen(req)
     str_cookies = response.info().getheader('Set-Cookie')
-    session_cookie= re.search('(JSESSIONIDv7=.*?;)',str_cookies).groups()[0]
+    session_cookie= re.search('(JSESSIONIDP1=.*?;)',str_cookies).groups()[0]
     
     #request for the user_select_url
     req = urllib2.Request(user_select_url,None,headers)
@@ -141,7 +141,7 @@ def gen_list_dict_blocks(str_roomtype_url):
     #logging.info(str_roomtype_url)
     response = urllib2.urlopen(req)
     str_cookies = response.info().getheader('Set-Cookie')
-    session_cookie= re.search('(JSESSIONIDv7=.*?;)',str_cookies).groups()[0]
+    session_cookie= re.search('(JSESSIONIDP1=.*?;)',str_cookies).groups()[0]
     contents = response.read()
 
     #get the ajax query
@@ -156,7 +156,7 @@ def gen_list_dict_blocks(str_roomtype_url):
 
     #return cgi.escape(contents)
     #str_cookies = response.info().getheader('Set-Cookie')
-    #session_cookie= re.search('(JSESSIONIDv7=.*?;)',str_cookies).groups()[0]
+    #session_cookie= re.search('(JSESSIONIDP1=.*?;)',str_cookies).groups()[0]
     blocks = re.finditer('javascript:checkBlk\((.*?)\)',contents,re.DOTALL)
     list_blocks=[]
     for idx,block in enumerate(blocks):
