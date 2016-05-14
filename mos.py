@@ -7,35 +7,15 @@ import HTMLParser
 
 
 #comment out for production
-from google.appengine.api import urlfetch
-urlfetch.set_default_fetch_deadline(60)
+#from google.appengine.api import urlfetch
+#urlfetch.set_default_fetch_deadline(60)
 #end
 
 #import pdb
 #pdb.set_trace()
 def get_dict_mos_links():
-
-    # headers = {'User-agent' :'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36'}
-    # url = "http://www.hdb.gov.sg/fi10/fi10321p.nsf/w/BuyingNewFlatShortlistedApplicants?OpenDocument"
-    # req = urllib2.Request(url,None,headers)
-    # response = urllib2.urlopen(req)
-    # the_page = response.read()
-    # #print the_page
-
-    # #get the line containing links
-    # for line in the_page.splitlines():
-        # if "Mode of Sale" in line:
-            # linkstr = line
-    # #The following code gets the str_session_url, which is the first URL from which the JSESSIONIDP1 cookie is initialized
-    # #<iframe name="FRAME1" height="2200" width="100%" frameborder=0 scrolling=auto src="http://services2.hdb.gov.sg/webapp/BP13INTV/BP13SFlatAvailability?sel=BTO"></iframe>
-    # str_session_url = re.search('<iframe name.*src="(.*)"></iframe>',the_page).groups()[0]
-
-    # #print linkstr
-    # mlist = re.finditer('javascript:loadURL\(\'(.*?)\'\)">(.*?)</a>', linkstr)
-    # #generate a dictionary of links of mode of sales
+    #generate a dictionary of links of mode of sales
     dict_mos_links = dict()
-    # for m in mlist:
-        # dict_mos_links[m.groups()[1]] = m.groups()[0]
     dict_mos_links['Build-To-Order'] = "http://services2.hdb.gov.sg/webapp/BP13AWFlatAvail/BP13SEstateSummary?sel=BTO"
     dict_mos_links['Sale of Balance Flats'] = "http://services2.hdb.gov.sg/webapp/BP13AWFlatAvail/BP13SEstateSummary?sel=SBF"
     str_session_url = "http://services2.hdb.gov.sg/webapp/BP13AWFlatAvail/BP13SEstateSummary?sel=BTO"
@@ -43,23 +23,23 @@ def get_dict_mos_links():
 
 def gen_dict_roomtype(user_select_url,session_url):
     h = HTMLParser.HTMLParser()
-    #opener = urllib2.build_opener()
-    #opener.addheaders=[('User-agent', 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36')]
-    headers = {'User-agent' :'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36'}
+
+    headers = {'User-agent' :'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36'}
     
     #generate the session cookie from the session_url
     req = urllib2.Request(session_url,None,headers)
     response = urllib2.urlopen(req)
     str_cookies = response.info().getheader('Set-Cookie')
+
     session_cookie= re.search('(JSESSIONIDP1=.*?;)',str_cookies).groups()[0]
-    
+
     #request for the user_select_url
     req = urllib2.Request(user_select_url,None,headers)
     req.add_header('Cookie',session_cookie)
+
     response = urllib2.urlopen(req)
     contents = response.read()
         
-    #logging.info(server_url)
     server_url = 'http://services2.hdb.gov.sg'
     #split the content by launchdates
     list_launches = contents.split('<h4>')
@@ -118,8 +98,6 @@ def gen_dict_roomtype(user_select_url,session_url):
                         dictval_roomtype = str(h.unescape(m.groups()[0].split(',')[0].strip('"'))) 
                         dictkey_roomtype = m.groups()[1]
                         dict_launches[dictkey_launchdate][dictkey_estate][dictkey_project][dictkey_roomtype]=server_url+dictval_roomtype
-                    #logging.info(dict_launches[dictkey_launchdate][dictkey_estate][dictkey_project][dictkey_roomtype])
-                    #print dict_launches[dictkey_launchdate][dictkey_estate][dictkey_project][dictkey_roomtype]
             else:
                 mlist = re.finditer('openmypage\((.*?)\)\'>?(.*?)</a></td>',estate)
                 #generate the dictionary dict_launches:estate:roomtype
@@ -127,46 +105,32 @@ def gen_dict_roomtype(user_select_url,session_url):
                     #logging.info(m.groups()[0])
                     dictval_roomtype = str(h.unescape(m.groups()[0]))
                     dictval_roomtype = dictval_roomtype.split(',')[0].strip('"')
-                    #logging.info(dictval_roomtype)
+
                     dictkey_roomtype = m.groups()[1]
-                    #logging.info(dictkey_roomtype)
+
                     dict_launches[dictkey_launchdate][dictkey_estate][dictkey_roomtype]=server_url+dictval_roomtype
 
     return dict_launches
 
 def gen_list_dict_blocks(str_roomtype_url):
-    headers = {'User-agent' :'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36'}
+    headers = {'User-agent' :'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36'}
     server_url = re.search('(.*)/.*?\?',str_roomtype_url).groups()[0]
     req = urllib2.Request(str_roomtype_url.replace(' ','%20'),None,headers)
-    #logging.info(str_roomtype_url)
     response = urllib2.urlopen(req)
     str_cookies = response.info().getheader('Set-Cookie')
     session_cookie= re.search('(JSESSIONIDP1=.*?;)',str_cookies).groups()[0]
     contents = response.read()
 
-    #get the ajax query
-    ajax_url = re.search('ajax\({.*url.*?"(.*?)",.*}', contents, re.DOTALL).groups()[0]
-    
-    server_ajax_url = server_url + '/' + ajax_url
-    
-    req = urllib2.Request(server_ajax_url, None, headers)
-    req.add_header('Cookie',session_cookie)
-    response = urllib2.urlopen(req)
-    contents = response.read()
-
-    #return cgi.escape(contents)
-    #str_cookies = response.info().getheader('Set-Cookie')
-    #session_cookie= re.search('(JSESSIONIDP1=.*?;)',str_cookies).groups()[0]
-    blocks = re.finditer('javascript:checkBlk\((.*?)\)',contents,re.DOTALL)
+    blocks = re.finditer('onclick="checkBlk\((.*?)\)',contents,re.DOTALL)
     list_blocks=[]
     for idx,block in enumerate(blocks):
         list_blocks.append(block.groups()[0].split(','))
-    #href="javascript:checkBlk('445A','N4','C13')"
-    #temp_str = re.search('(href="javascript:checkBlk.*")?',contents,re.DOTALL).groups()[0]
-    raw_post_data = re.search('(<input type="hidden" name="Block".*</FORM>)',contents,re.DOTALL).groups()[0]
-    #<input type="hidden" name="Block" value="">
+
+    raw_post_data = re.search('(<input type="hidden" id="Block" name="Block".*</form>)',contents,re.DOTALL).groups()[0]
+
     post_data = re.findall('<input type="hidden".*?name="(.*)".*?value="(.*)">',raw_post_data)
     dict_post_data = dict()
+
     for param in post_data:
         dict_post_data[param[0]]=param[1]
     list_dict_post_data = []
@@ -175,53 +139,49 @@ def gen_list_dict_blocks(str_roomtype_url):
         list_dict_post_data[idx]['Block']=block[0].strip('\'')
         list_dict_post_data[idx]['Neighbourhood']=block[1].strip('\'')
         list_dict_post_data[idx]['Contract']=block[2].strip('\'')
+        #hey, the bottom 2 fields are hard coded. In fact, the get request that will 
+        #now be constructed from the javascript getParameters() 
+        #along with other css and fill the form variables.
+        #A possible point for code improvement to make this code more generic/flexible.
+        list_dict_post_data[idx]['Flat'] = re.search('.*Flat=(.*?)&.*',str_roomtype_url).groups()[0]
+        list_dict_post_data[idx]['Town'] = re.search('.*Town=(.*?)&.*',str_roomtype_url).groups()[0]
 
-    return (server_ajax_url).split('?')[0],list_dict_post_data,session_cookie
+    return str_roomtype_url,list_dict_post_data,session_cookie
 
 def list_analyse_block(reference_url,reference_cookie,dict_post_data):
     headers = {'User-agent' :'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36'}
-    post_data = urllib.urlencode(dict_post_data)
+    post_data = urllib.urlencode(dict_post_data)                    #now we're actually not use post, but get
+                                                                    #the get request will now be constructed from the dictionary
+                                                                    #sent by the roomtype page.
+    reference_url = reference_url + post_data.replace('button=','') #strip out the commented form field
+    reference_url = reference_url.replace('isTownChange=No','')     #strip out the commented form field
+    reference_url = reference_url.replace(' ','+')                  #replace town names' spaces with +. e.g. Bukit Batok -> Bukit+Batok
+    req = urllib2.Request(reference_url, None, headers)
+    req.add_header('Cookie',reference_cookie)
+    response = urllib2.urlopen(req)
+    contents = response.read()
 
-    req = urllib2.Request(reference_url, post_data, headers)
-    req.add_header('Cookie',reference_cookie)
-    response = urllib2.urlopen(req)
-    contents = response.read()
-    #logging.info(contents)
-    
-    ajax_url = re.search('ajax\({.*url.*?"(.*?)",.*}', contents, re.DOTALL).groups()[0]
-    
-    result_url = reference_url.rsplit('/',1)[0]
-    
-    result_ajax_url = result_url + '/' + ajax_url
-    
-    req = urllib2.Request(result_ajax_url, None, headers)
-    #req.add_header('Referer', 'http://services2.hdb.gov.sg/webapp/BP13AWFlatAvail/BP13EBSBULIST4')
-    req.add_header('Cookie',reference_cookie)
-    response = urllib2.urlopen(req)
-    contents = response.read()
-    
     #return contents
     CSVlist = []
     SoldUnits = 0
     TotalUnits = 0
     #include the sold units as well
-    #logging.info(contents)
-    #<td class="textContentNew" colspan="2" nowrap>Malay-10,&nbsp;Chinese-10,&nbsp;Indian/Other Races-4&nbsp;</td>
-    str_ethnic_quota = re.search('<td class="textContentNew" colspan="2" nowrap>(Malay.*&nbsp;)</td>',contents,re.DOTALL).groups()[0].strip('&nbsp;')
-    #logging.info(str_ethnic_quota)
-    for m in re.finditer('.*font class(.*)</div>', contents):
+
+    str_ethnic_quota = re.search('.*(Malay.*?)&nbsp;.*',contents,re.DOTALL).groups()[0]
+
+    for m in re.finditer('<td style="font-size:11px; text-align:center;" onclick="bookMarkCheck(.*?)</td>', contents, re.DOTALL):
             substring = m.groups()[0]
             CSVSublist = []
             TotalUnits +=1
             #find the unit
-            CSVSublist.append(re.match('.*>(.*)</font>.*',substring).groups()[0].strip())
+            CSVSublist.append(re.match('.*\(\'\',\'(.*)\'\).*',substring).groups()[0].strip())
             #find the price and floor area (for a bluetext)
             try:
-                    CSVSublist.append(re.search('.*nbsp;(.*)</td></tr><tr bgcolor.*',substring).groups()[0])
+                    CSVSublist.append(re.search('.*title=\"(.*?)<br/>.*',substring).groups()[0])
                     try:
-                        CSVSublist.append(re.search('left;\'>(.*)&nbsp;Sqm</td><',substring).groups()[0])
+                        CSVSublist.append(re.search('.*<br/>(.*)&nbsp;Sqm".*',substring).groups()[0] + ' Sqm')
                     except:
-                        CSVSublist.append(re.search('left;\'>(.*)&nbsp;Sqm(\(3Gen\))</td><',substring).groups()[0]+' '+re.search('left;\'>(.*)&nbsp;Sqm(\(3Gen\))</td><',substring).groups()[1])
+                        CSVSublist.append(re.search('.*<br/>(.*)&nbsp;Sqm\(3Gen\)".*',substring).groups()[0] + ' Sqm(3Gen)')
             except:
             #append sold and N.A. for a redtext
                     SoldUnits +=1
