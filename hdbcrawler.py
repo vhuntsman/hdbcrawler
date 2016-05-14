@@ -133,7 +133,7 @@ class ReportPage(webapp2.RequestHandler):
                 'list_unit_data': list_unit_values,
                 'units_sold': sold_cnt,
                 'units_total':total_cnt,
-                'ethnic_quota':ethnic_quota.replace("&nbsp;", " "),
+                'ethnic_quota':ethnic_quota,
                 'dict_post_data':dict_post_data,
             }
         
