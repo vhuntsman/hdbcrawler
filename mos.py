@@ -95,20 +95,20 @@ def gen_dict_roomtype(user_select_url,session_url):
                     
                     #generate the dictionary dict_launches:estate:project:roomtype
                     for m in mlist:
-                        dictval_roomtype = str(h.unescape(m.groups()[0].split(',')[0].strip('"'))) 
+                        dictval_roomtype = str(h.unescape(m.groups()[0]))
+                        dictval_roomtype = dictval_roomtype.split(',')[0].strip('"')
                         dictkey_roomtype = m.groups()[1]
                         dict_launches[dictkey_launchdate][dictkey_estate][dictkey_project][dictkey_roomtype]=server_url+dictval_roomtype
+                        #logging.info("timteh: " + dictval_roomtype)
             else:
                 mlist = re.finditer('openmypage\((.*?)\)\'>?(.*?)</a></td>',estate)
                 #generate the dictionary dict_launches:estate:roomtype
                 for m in mlist:
-                    #logging.info(m.groups()[0])
                     dictval_roomtype = str(h.unescape(m.groups()[0]))
                     dictval_roomtype = dictval_roomtype.split(',')[0].strip('"')
-
                     dictkey_roomtype = m.groups()[1]
-
                     dict_launches[dictkey_launchdate][dictkey_estate][dictkey_roomtype]=server_url+dictval_roomtype
+                    #logging.info("timteh: " + dictval_roomtype)
 
     return dict_launches
 
@@ -160,16 +160,16 @@ def list_analyse_block(reference_url,reference_cookie,dict_post_data):
     req.add_header('Cookie',reference_cookie)
     response = urllib2.urlopen(req)
     contents = response.read()
-
+    #logging.info(contents)
     #return contents
     CSVlist = []
     SoldUnits = 0
     TotalUnits = 0
     #include the sold units as well
-
+    #logging.info("Timteh: Raw HTML: " + contents)
     str_ethnic_quota = re.search('.*(Malay.*?)&nbsp;.*',contents,re.DOTALL).groups()[0]
 
-    for m in re.finditer('<td style="font-size:11px; text-align:center;" onclick="bookMarkCheck(.*?)</td>', contents, re.DOTALL):
+    for m in re.finditer('<td style="font-size:[0-9]+px; text-align:center;" onclick="bookMarkCheck(.*?)</td>', contents, re.DOTALL):
             substring = m.groups()[0]
             CSVSublist = []
             TotalUnits +=1
